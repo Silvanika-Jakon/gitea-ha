@@ -1,0 +1,2 @@
+prometheus_targets_path: "/root/prometheus/etc/targets/node_exporter.json"
+prometheus_targets_group: "all"

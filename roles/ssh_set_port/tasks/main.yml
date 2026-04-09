@@ -1,0 +1,14 @@
+- name: Check if new SSH port is open
+  wait_for:
+    host: "{{ ansible_host }}"
+    port: 222
+    timeout: 3
+  register: ssh_222_check
+  ignore_errors: yes
+  delegate_to: localhost
+
+- name: Set SSH port dynamically
+  set_fact:
+    ansible_port: "{{ 222 if ssh_222_check is succeeded else 22 }}"
+
+- meta: reset_connection

@@ -1,0 +1,37 @@
+[all]
+etcd01.vid-1239.rvision.local ansible_host=10.99.154.232
+etcd02.vid-1239.rvision.local ansible_host=10.99.154.233
+etcd03.vid-1239.rvision.local ansible_host=10.99.154.234
+pgs01.vid-1239.rvision.local ansible_host=10.99.154.230
+pgs02.vid-1239.rvision.local ansible_host=10.99.154.231
+gitea01.vid-1239.rvision.local ansible_host=10.99.154.227
+gitea02.vid-1239.rvision.local ansible_host=10.99.154.228
+ha01.vid-1239.rvision.local ansible_host=10.99.154.238
+mon01.vid-1239.rvision.local ansible_host=10.99.154.237
+log01.vid-1239.rvision.local ansible_host=10.99.154.229
+
+[etcd]
+etcd01.vid-1239.rvision.local ansible_host=10.99.154.232
+etcd02.vid-1239.rvision.local ansible_host=10.99.154.233
+etcd03.vid-1239.rvision.local ansible_host=10.99.154.234
+
+[psql]
+pgs01.vid-1239.rvision.local ansible_host=10.99.154.230
+pgs02.vid-1239.rvision.local ansible_host=10.99.154.231
+
+[haproxy_psql]
+etcd01.vid-1239.rvision.local ansible_host=10.99.154.232 master=true
+etcd02.vid-1239.rvision.local ansible_host=10.99.154.233
+
+[gitea]
+gitea01.vid-1239.rvision.local ansible_host=10.99.154.227
+gitea02.vid-1239.rvision.local ansible_host=10.99.154.228
+
+[haproxy_gitea]
+ha01.vid-1239.rvision.local ansible_host=10.99.154.238
+
+[prometheus]
+mon01.vid-1239.rvision.local ansible_host=10.99.154.237
+
+[graylog]
+log01.vid-1239.rvision.local ansible_host=10.99.154.229

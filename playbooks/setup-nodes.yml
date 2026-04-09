@@ -1,0 +1,124 @@
+- name: SSH set port for connection
+  hosts: all
+  roles:
+    - role: ssh_set_port
+
+- name: Setup hostnames
+  hosts: all
+  tasks:
+    - name: Set system hostname
+      ansible.builtin.hostname:
+        name: "{{ inventory_hostname }}"
+      become: true
+
+- name: Install etcd
+  hosts: etcd
+  become: true
+  roles:
+    - role: etcd_install
+
+- name: Install Patroni + Postgres
+  hosts: psql
+  become: true
+  roles:
+    - patroni_install
+
+- name: Install Haproxy for postgres
+  hosts: haproxy_psql
+  become: true
+  roles:
+    - role: haproxy_install
+      vars:
+        target_group: haproxy_psql
+
+- name: Install Keepalived
+  hosts: haproxy_psql
+  become: true
+  roles:
+    - role: keepalived_install
+      vars: 
+        pgs_vrrp: 10.99.154.235
+
+#- name: Install Redis
+#  hosts: graylog
+#  become: true
+#  roles:
+#    - role: redis_install
+
+#- name: Setup NFS share
+#  hosts: graylog
+#  become: true
+#  roles:
+#    - role: nfs_install
+
+- name: Install Gitea
+  hosts: gitea
+  become: true
+  roles:
+    - role: gitea_install
+      vars: 
+        pgs_vrrp: 10.99.154.235
+
+- name: Change port for HAproxy Gitea
+  hosts: haproxy_gitea
+  become: true
+  roles:
+    - ssh_change_port
+
+- name: Install haproxy for Gitea
+  hosts: haproxy_gitea
+  become: true
+  roles:
+    - role: haproxy_install
+      vars:
+        target_group: haproxy_gitea
+
+- name: Install rsyslog
+  hosts: all
+  become: true
+  roles:
+    - role: rsyslog
+      vars:
+        rsyslog_remote_host: "10.99.154.229"
+        rsyslog_remote_port: 5140
+        rsyslog_protocol: "udp"
+        rsyslog_use_json: false
+
+- name: Install node exporters
+  hosts: all
+  become: true
+  roles:
+    - node_exporter_install
+
+- name: Install postgres exporters
+  hosts: psql
+  become: true
+  roles:
+    - postgres_exporter_install
+
+- name: Setup prometheus targets
+  hosts: prometheus
+  become: true
+  roles:
+    - role: prometheus_configure_targets
+      vars:
+        prometheus_targets_group: all
+
+- name: Add backup of Postgres db
+  hosts: graylog
+  become: true
+  roles:
+    - role: pg_bkp_add
+      vars: 
+        pgs_vrrp: 10.99.154.235
+
+- name: Create graylog stream
+  hosts: all
+  roles:
+    - graylog_stream_create
+      
+- name: Setup firewalld
+  hosts: all
+  become: true
+  roles:
+    - firewalld_setup

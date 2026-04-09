@@ -1,0 +1,14 @@
+- name: Install haproxy
+  dnf:
+    name: "haproxy"
+    state: present
+
+- name: Generate certs
+  include_tasks: gen_certs.yml
+  when: target_group == "haproxy_gitea"
+
+- name: Copy config to host
+  template:
+    src: "{{ target_group }}.cfg.j2"
+    dest: /etc/haproxy/haproxy.cfg
+  notify: start haproxy

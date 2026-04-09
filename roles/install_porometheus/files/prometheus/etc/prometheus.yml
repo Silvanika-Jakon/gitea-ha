@@ -1,0 +1,47 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: node
+    scrape_interval: 5s
+
+    file_sd_configs:
+      - files:
+        - /etc/prometheus/targets/node_exporter.json
+
+  - job_name: "etcd"
+    scrape_interval: 15s
+    metrics_path: /metrics
+    static_configs:
+      - targets: [10.99.154.232:2379,10.99.154.233:2379,10.99.154.234:2379]
+
+  - job_name: 'postgres_exporter_PG1'
+    metrics_path: '/metrics'
+    static_configs:
+    - targets: [10.99.154.230:9187,10.99.154.231:9187]
+
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://gitea.rvision.local
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+rule_files:
+  - 'alert.yml'
+
+alerting:
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "alertmanager:9093"

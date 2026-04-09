@@ -1,0 +1,89 @@
+- name: Copy env file to /etc/environment
+  copy:
+    src: environment
+    dest: /etc/environment
+
+- name: Source env
+  shell: source /etc/environment
+
+- name: Download gitea
+  get_url:
+    url: "https://dl.gitea.com/gitea/1.25.5/gitea-1.25.5-linux-amd64"
+    dest: "/usr/local/sbin/gitea"
+
+- name: Make executable
+  shell: chmod +x /usr/local/sbin/gitea
+
+- name: Create group git
+  group:
+    name: git
+    gid: 990
+    system: true
+
+- name: Check if UID exists
+  command: getent passwd 994
+  register: uid_check
+  failed_when: false
+  changed_when: false
+
+- name: Create gitea user
+  user:
+    name: "git"
+    shell: /bin/bash
+    system: true
+    comment: 'Git Version Control'
+    group: git
+    create_home: true
+    home: /home/git
+    uid: 994
+  when: uid_check.rc != 0
+
+- name: Install nfs-utils
+  dnf:
+    name: "nfs-utils"
+    state: present
+
+- name: Check that folder exists
+  stat:
+    path: "/var/lib/gitea"
+  register: folder_info
+
+- name: Create gitea folder
+  shell: mkdir -p /var/lib/gitea/ && chown -R git:git /var/lib/gitea/ && chmod -R 750 /var/lib/gitea/
+  when: not folder_info.stat.exists
+
+- name: Mount NFS share
+  shell: mount -t nfs {{ hostvars['log01.vid-1239.rvision.local'].ansible_host }}:/srv/nfs/shared /var/lib/gitea/
+  when: not folder_info.stat.exists
+
+- name: Check that folder exists
+  stat:
+    path: "/etc/gitea"
+  register: folder_etc
+
+- name: Create /etc/gitea
+  shell: | 
+    mkdir /etc/gitea && chmod 770 /etc/gitea && chown root:git /etc/gitea
+  when: not folder_etc.stat.exists
+
+- name: Copy systemd service
+  copy:
+    src: gitea.service
+    dest: /etc/systemd/system/gitea.service
+
+- name: Create app.ini file
+  template:
+    src: app.ini.j2
+    dest: /etc/gitea/app.ini
+  notify: start gitea
+
+- name: Change fstab
+  lineinfile:
+    path: /etc/fstab
+    line: "{{ hostvars['log01.vid-1239.rvision.local'].ansible_host }}:/srv/nfs/shared /var/lib/gitea/  nfs4  defaults,nofail  0  0"
+    insertafter: EOF
+    state: present
+
+
+
+

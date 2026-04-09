@@ -1,0 +1,21 @@
+global:
+  resolve_timeout: 20s
+
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  receiver: telegram-notifications
+  group_by: ['alertname']
+  group_wait: 0s
+  group_interval: 1s
+  repeat_interval: 15m
+
+receivers:
+- name: telegram-notifications
+  telegram_configs:
+  - bot_token: '123456:AAFl8d0IuU0gh7v8HSdof-BI6haewWIgJcI'
+    chat_id: 123456
+    message: '{{ template "telegram.message" . }}'
+    http_config:
+      proxy_from_environment: true

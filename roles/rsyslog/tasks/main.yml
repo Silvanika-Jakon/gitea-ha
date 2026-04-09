@@ -1,0 +1,19 @@
+- name: Install rsyslog
+  dnf:
+    name: "{{ rsyslog_package_name }}"
+    state: present
+
+- name: Ensure rsyslog is enabled and started
+  service:
+    name: rsyslog
+    state: started
+    enabled: true
+
+- name: Deploy rsyslog config
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.d/graylog.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart rsyslog

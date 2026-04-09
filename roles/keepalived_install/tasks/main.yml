@@ -1,0 +1,10 @@
+- name: Install keepalived
+  dnf:
+    name: "keepalived"
+    state: present
+
+- name: Copy config to host
+  template:
+    src: "keepalived.conf.j2"
+    dest: /etc/keepalived/keepalived.conf
+  notify: start keepalived

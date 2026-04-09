@@ -1,0 +1,15 @@
+ca_key_path: /etc/ssl/private/ca.key.pem
+ca_cert_path: /etc/ssl/certs/ca.crt.pem
+haproxy_key_path: /etc/ssl/private/haproxy.key.pem
+haproxy_csr_path: /tmp/haproxy.csr.pem
+haproxy_cert_path: /etc/ssl/certs/haproxy.crt.pem
+haproxy_fullchain_path: /etc/haproxy/certs/haproxy.pem
+haproxy_fullchain_folder: /etc/haproxy/certs
+
+# certificate subjects
+ca_subject: "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/OU=IT/CN=MyRootCA"
+haproxy_subject: "/C=RU/ST=Moscow/L=Moscow/O=MyOrg/OU=IT/CN=gitea.rvision.local"
+
+# validity periods
+ca_days: 3650
+haproxy_days: 825

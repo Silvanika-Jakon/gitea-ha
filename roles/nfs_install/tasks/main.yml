@@ -1,0 +1,16 @@
+- name: Install nfs-utils
+  dnf:
+    name: nfs-utils
+    state: present
+
+- name: Create dir and set open permissions
+  shell: chown -R nobody:nobody /srv/nfs/shared && chmod 777 /srv/nfs/shared
+
+- name: Edit exports
+  lineinfile:
+    path: /etc/exports
+    line: "/srv/nfs/shared {{ cidr }}(rw,sync,no_subtree_check)"
+    insertafter: EOF
+    state: present
+  notify: start nfs-utils
+  

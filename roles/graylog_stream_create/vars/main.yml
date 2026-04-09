@@ -1,0 +1,9 @@
+graylog_username: admin
+graylog_password: 7aRQD3xg
+graylog_api_url: "http://{{hostvars['log01.vid-1239.rvision.local'].ansible_host }}:9000/api"
+graylog_stream_rules:
+  - field: "source"
+    type: 1
+    value: "{{ inventory_hostname.split('.')[0] }}"
+    inverted: false
+    description: "collect logs by source"

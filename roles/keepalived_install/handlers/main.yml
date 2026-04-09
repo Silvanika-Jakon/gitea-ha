@@ -1,0 +1,6 @@
+- name: start keepalived
+  systemd:
+    name: keepalived
+    enabled: true
+    state: restarted
+    daemon_reload: true

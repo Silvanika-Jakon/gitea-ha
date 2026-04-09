@@ -1,0 +1,46 @@
+- name: Add pg repository
+  copy:
+    src: pg.repo
+    dest: /etc/yum.repos.d/pg.repo
+
+- name: Install system dependencies
+  dnf:
+    name:
+      - python3-pip
+      - python3-devel
+      - gcc
+      - postgresql16-server
+    state: present
+
+- name: Ensure pip is upgraded
+  pip:
+    name: pip
+    executable: "{{ pip_bin }}"
+    state: latest
+
+- name: Install Patroni with etcd support
+  pip:
+    name: 
+      - patroni[etcd]
+      - psycopg
+    executable: "{{ pip_bin }}"
+    state: present
+
+- name: Ensure /usr/local/bin is in PATH
+  lineinfile:
+    path: /etc/profile.d/custom_path.sh
+    create: yes
+    line: 'export PATH=/usr/local/bin:$PATH'
+    state: present
+
+- name: Replace systemd unit file
+  copy:
+    src: patroni.service
+    dest: /etc/systemd/system/patroni.service
+
+- name: Create patroni config
+  template:
+    src: patroni.yml.j2
+    dest: /etc/patroni.yml
+  notify: Start patroni
+

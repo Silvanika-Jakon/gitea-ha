@@ -1,0 +1,6 @@
+export ftp_proxy=http://proxy.rvision.local:3129
+export http_proxy=http://proxy.rvision.local:3129
+export https_proxy=http://proxy.rvision.local:3129
+export RSYNC_PROXY=proxy.rvision.local:3129
+export no_proxy=localhost,127.0.0.1,.rvision.local,.rvision.pro,.dev.local,.lab150000.local,.lab2003.local,.lab2012.local,.rvision.pro,.rvision.ru,.rvlab.local,.test
+export PYTHONWARNINGS="ignore"

@@ -1,0 +1,44 @@
+- name: Download etcd
+  get_url:
+    url: "{{DOWNLOAD_URL}}/{{ETCD_VER}}/etcd-{{ETCD_VER}}-linux-amd64.tar.gz"
+    dest: "/tmp/etcd-{{ETCD_VER}}-linux-amd64.tar.gz"
+
+- name: Create directory
+  shell: mkdir -p /tmp/etcd-download-test
+
+- name: Unarchive etcd
+  ansible.builtin.unarchive:
+    src: "/tmp/etcd-{{ ETCD_VER }}-linux-amd64.tar.gz"
+    dest: /tmp/etcd-download-test
+    remote_src: yes
+    extra_opts:
+      - --strip-components=1
+
+- name: Copy files to PATH folder
+  shell: mv /tmp/etcd-download-test/etcd* /usr/local/bin/
+
+- name: Create group etcd
+  group:
+    name: etcd
+    system: true
+
+- name: Create etcd user
+  user:
+    name: etcd
+    shell: /sbin/nologin
+    system: true
+    group: etcd
+
+- name: Create groups for etcd
+  shell: mkdir -p /var/lib/etcd/ && mkdir -p /etc/etcd && chown -R etcd:etcd /var/lib/etcd/ && chmod -R 700 /var/lib/etcd/
+
+- name: Add members to no_proxy
+  template:
+    src: env.j2
+    dest: /etc/environment
+
+- name: Create systemd unit
+  template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  notify: start etcd

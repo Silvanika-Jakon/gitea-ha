@@ -1,0 +1,14 @@
+[
+{% for host in groups[prometheus_targets_group] %}
+  {
+    "targets": [
+      "{{ hostvars[host].ansible_host | default(host) }}:9100"
+    ],
+    "labels": {
+      "job": "node_exporter",
+      "hostname": "{{ hostvars[host].inventory_hostname }}",
+      "instance": "{{ hostvars[host].ansible_host }}"
+    }
+  }{% if not loop.last %},{% endif %}
+{% endfor %}
+]

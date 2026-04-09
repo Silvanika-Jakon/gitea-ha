@@ -1,0 +1,71 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    daemon
+    maxconn 4096
+
+defaults
+    log global
+    mode http
+    option httplog
+    option dontlognull
+    timeout connect 5s
+    timeout client  1m
+    timeout server  1m
+
+listen stats
+      mode http
+      bind *:7000
+      stats enable
+      stats uri /
+
+# =========================
+# HTTPS (Gitea Web + Git over HTTP)
+# =========================
+frontend gitea_https
+    bind *:443 ssl crt /etc/haproxy/certs/haproxy.pem
+    mode http
+
+    option forwardfor
+    http-request set-header X-Forwarded-Proto https
+
+    default_backend gitea_http_backend
+
+
+backend gitea_http_backend
+    mode http
+    option httpchk GET /api/healthz
+    cookie SERVER insert indirect nocache
+{% for host in groups['gitea'] %}
+    server {{ host.split('.')[0] }} {{ hostvars[host].ansible_host }}:3000 check cookie s1
+{% endfor %}
+    # важно для git push
+    timeout server 1h
+
+
+# =========================
+# HTTP → HTTPS redirect
+# =========================
+frontend gitea_http_redirect
+    bind *:80
+    mode http
+    redirect scheme https if !{ ssl_fc }
+
+
+# =========================
+# SSH (Git over SSH)
+# =========================
+frontend gitea_ssh
+    bind *:22
+    mode tcp
+    option tcplog
+    default_backend gitea_ssh_backend
+
+
+backend gitea_ssh_backend
+    mode tcp
+    balance roundrobin
+    cookie SERVER insert indirect nocache
+    {% for host in groups['gitea'] %}
+    server {{ host.split('.')[0] }} {{ hostvars[host].ansible_host }}:22 check cookie s1
+    {% endfor %}

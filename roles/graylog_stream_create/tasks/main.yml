@@ -1,0 +1,65 @@
+- name: Get index sets
+  uri:
+    url: "{{ graylog_api_url }}/system/indices/index_sets"
+    method: GET
+    user: "{{ graylog_username }}"
+    password: "{{ graylog_password }}"
+    force_basic_auth: yes
+    headers:
+      X-Requested-By: "ansible"
+    return_content: yes
+  register: index_sets
+  delegate_to: localhost
+
+- name: Extract default index set id
+  set_fact:
+    graylog_stream_index_set_id: >-
+      {{
+        (index_sets.json.index_sets
+         | selectattr('title', 'equalto', 'Default index set')
+         | map(attribute='id')
+         | first)
+      }}
+  delegate_to: localhost
+
+- name: Get existing streams
+  uri:
+    url: "{{ graylog_api_url }}/streams"
+    method: GET
+    user: "{{ graylog_username }}"
+    password: "{{ graylog_password }}"
+    force_basic_auth: yes
+    headers:
+      X-Requested-By: "ansible"
+    return_content: yes
+  register: existing_streams
+  delegate_to: localhost
+
+- name: Check if stream exists
+  set_fact:
+    stream_exists: "{{ inventory_hostname in (existing_streams.json.streams | map(attribute='title') | list) }}"
+  delegate_to: localhost
+
+- name: Create Graylog stream if not exists
+  uri:
+    url: "{{ graylog_api_url }}/streams"
+    method: POST
+    user: "{{ graylog_username }}"
+    password: "{{ graylog_password }}"
+    force_basic_auth: yes
+    headers:
+      X-Requested-By: "ansible"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      entity:
+        title: "{{ inventory_hostname }}"
+        description: "Host log aggregation"
+        index_set_id: "{{ graylog_stream_index_set_id }}"
+        remove_matches_from_default_stream: "true"
+        rules: "{{ graylog_stream_rules }}"
+    status_code: 201
+    validate_certs: no
+  register: graylog_stream_result
+  when: not stream_exists
+  delegate_to: localhost

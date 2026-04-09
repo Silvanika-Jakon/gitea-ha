@@ -1,0 +1,17 @@
+- name: Set new SSH port in sshd_config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port'
+    line: "Port 222"
+    state: present
+  notify: Restart ssh
+
+- name: Flush handlers to restart ssh now
+  meta: flush_handlers
+
+- name: Update ansible_port for this host
+  set_fact:
+    ansible_port: "222"
+
+- name: Reset SSH connection
+  meta: reset_connection

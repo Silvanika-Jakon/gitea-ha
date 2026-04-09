@@ -1,0 +1,4 @@
+postgres_pass: B0PSWCwNkrIuKzEr
+patroni_version: latest
+python_bin: /usr/bin/python3
+pip_bin: /usr/bin/pip3

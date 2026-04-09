@@ -1,0 +1,9 @@
+[pg_local]
+name=CentOS Stream $releasever - PG local from m1-inf-rep-pr
+baseurl=https://m1-inf-rpl-pr01.rvision.local/repos/pg/16/redhat/rhel-9-x86_64/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+gpgcheck=0
+repo_gpgcheck=0
+metadata_expire=6h
+countme=1
+enabled=1

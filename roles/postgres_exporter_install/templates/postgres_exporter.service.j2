@@ -1,0 +1,13 @@
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+User={{ postgres_exporter_user }}
+EnvironmentFile=/home/user/postgres-exporter-PG1.env
+ExecStart=/usr/local/bin/postgres_exporter \
+  --web.listen-address=:9187 --web.telemetry-path=/metrics --auto-discover-databases --extend.query-path=/var/queries.yaml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

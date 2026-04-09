@@ -1,0 +1,6 @@
+- name: start nfs-utils
+  systemd:
+    name: nfs-utils
+    enabled: true
+    state: restarted
+    daemon_reload: true

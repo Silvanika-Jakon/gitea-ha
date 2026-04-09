@@ -1,0 +1,4 @@
+rsyslog_remote_host: "10.99.154.229"
+rsyslog_remote_port: 1514
+rsyslog_protocol: "tcp"
+rsyslog_template: "RSYSLOG_SyslogProtocol23Format"

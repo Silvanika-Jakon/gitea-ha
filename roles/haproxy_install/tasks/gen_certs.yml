@@ -1,0 +1,61 @@
+- name: Install cryptography
+  dnf:
+    name: python3-cryptography
+    state: present
+    
+- name: Ensure directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /etc/ssl/private
+    - /etc/ssl/certs
+
+- name: Copy CA cert
+  copy:
+    src: ca.crt.pem
+    dest: "{{ ca_cert_path }}"
+
+- name: Copy CA key file
+  copy:
+    src: ca.key.pem
+    dest: "{{ ca_key_path }}"
+
+- name: Generate HAProxy private key
+  openssl_privatekey:
+    path: "{{ haproxy_key_path }}"
+    size: 2048
+    state: present
+    type: RSA
+
+- name: Generate HAProxy CSR
+  community.crypto.openssl_csr:
+    path: "{{ haproxy_csr_path }}"
+    privatekey_path: "{{ haproxy_key_path }}"
+    common_name: "gitea.rvision.local"
+
+- name: Sign HAProxy certificate
+  community.crypto.x509_certificate:
+    path: "{{ haproxy_cert_path }}"
+    csr_path: "{{ haproxy_csr_path }}"
+    provider: ownca
+    ownca_path: "{{ ca_cert_path }}"
+    ownca_privatekey_path: "{{ ca_key_path }}"
+    ownca_not_after: "+{{ haproxy_days }}d"
+
+- name: Check that file exists
+  stat:
+    path: "{{ haproxy_fullchain_folder }}"
+  register: haproxy_folder
+
+- name: Create dir for haproxy.pem
+  shell: |
+    mkdir -p {{ haproxy_fullchain_folder }}
+  when: not haproxy_folder.stat.exists
+
+- name: Create fullchain
+  shell: |
+    cat {{ haproxy_key_path }} {{ haproxy_cert_path }} {{ ca_cert_path }} > {{ haproxy_fullchain_path }}
+  args:
+    creates: "{{ haproxy_fullchain_path }}"
